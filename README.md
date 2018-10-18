@@ -1,6 +1,6 @@
 # Study Algorism YEAH!!
 
-## 공부해볼꺼
+## 공부해볼거
 
 smith-waterman https://en.wikipedia.org/wiki/Smith%E2%80%93Waterman_algorithm
 
