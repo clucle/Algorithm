@@ -1,3 +1,5 @@
+// 0으로 무한루프랑, long long을 신경써야됐다
+
 #include<iostream>
 #include<climits>
 #include<algorithm>
