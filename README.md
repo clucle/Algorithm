@@ -18,3 +18,6 @@ https://en.wikipedia.org/wiki/Bentley%E2%80%93Ottmann_algorithm
 
 유량
 Ford-Fulkerson O(Ef) [boj](https://www.acmicpc.net/problem/6086)
+
+세그먼트트리
+lazy propagation 까지 해봤으니까 bottom up 이랑 2d 세그 트리
