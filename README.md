@@ -2,8 +2,6 @@
 
 ## 공부해볼거
 
-smith-waterman https://en.wikipedia.org/wiki/Smith%E2%80%93Waterman_algorithm
-
 2sat, union find (scpc 2017 예선)
 
 회문 Manacher's Algorithm http://blog.myungwoo.kr/56
