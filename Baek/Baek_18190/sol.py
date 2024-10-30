@@ -1,11 +1,12 @@
 from sys import stdin
 from decimal import Decimal, getcontext
+import math
 
 # for test
 # stdin=open("input.txt","r")
 
 N, M, Q = list(map(int, stdin.readline().split()))
-getcontext().prec = 35
+getcontext().prec = 80
 
 convexBig = []
 convexSmall = []
@@ -340,15 +341,20 @@ def nearIndex(hull, point, dir):
     return l
 
 def lineIntersect(x1, y1, x2, y2, x3, y3, x4, y4):
-    ux = Decimal((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4))
-    dx = Decimal((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4))
+    ux = ((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4))
+    dx = ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4))
 
-    uy = Decimal((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4))
-    dy = Decimal((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4))
+    uy = ((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4))
+    dy = ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4))
 
-    x = ux / dx
-    y = uy / dy
-    return (x, y)
+    gx = math.gcd(ux, dx)
+    ux //= gx
+    dx //= gx
+    gy = math.gcd(uy, dy)
+    uy //= gy
+    dy //= gy
+
+    return (ux, uy, dx, dy)
 
 read()
 
@@ -394,17 +400,46 @@ for q in query:
         q[0], q[1],
         q[0] + down_tangent[0], q[1] + down_tangent[1])
 
+    xmul = upIntersect[2] * downIntersect[2]
+    ymul = upIntersect[3] * downIntersect[3]
+
+    print("xmul: ", xmul, "dx :", upIntersect[2], downIntersect[2])
+    print("ymul: ", ymul, "dy :", upIntersect[3], downIntersect[3])
+
+    print("origin u : ", upIntersect[0] / upIntersect[2], upIntersect[1] / upIntersect[3])
+    print("origin d : ", downIntersect[0] / downIntersect[2], downIntersect[1] / downIntersect[3])
+    
+
+    # up, down 의 0,1 은 이미 2,3 이 곱해져 있다고 생각
+    # q 에만 xmul & ymul 을 곱해서 사용해보자..!
+
     big: Decimal = 0
     if up_tangent_index == down_tangent_index:
         # 한 선분내에 점이 두개있다면 따로 처리
-        vup_x = upIntersect[0] - q[0]
-        vup_y = upIntersect[1] - q[1]
-        vdown_x = downIntersect[0] - q[0]
-        vdown_y = downIntersect[1] - q[1]
+        vup_x = upIntersect[0] * downIntersect[2] - q[0] * xmul
+        vup_y = upIntersect[1] * downIntersect[3] - q[1] * ymul
+        vdown_x = downIntersect[0] * upIntersect[2] - q[0] * xmul
+        vdown_y = downIntersect[1] * upIntersect[3] - q[1] * ymul
 
-        big = cross(vup_x, vup_y, vdown_x, vdown_y)
-        if big < 0:
-            big = -big
+        area = cross(vup_x, vup_y, vdown_x, vdown_y)
+        # 계산 위에 모두 +로 전환
+        if area < 0:
+            area = -area
+        if xmul < 0:
+            xmul = -xmul
+        if ymul < 0:
+            ymul = -ymul
+
+        # 결국 우리는 area / (xmul * ymul 을 구할거임)
+
+        # 몫
+        val = area // (xmul * ymul)
+        # area 에서 큰 부분 뺌
+        area -= val * xmul * ymul
+        # 몫 + 나머지 계산
+        big = Decimal(val)
+        big += Decimal(area) / Decimal(xmul * ymul)
+
     else:
         if down_tangent_index < up_tangent_index:
             down_tangent_index += N
@@ -412,21 +447,34 @@ for q in query:
         start = convexBig[(up_tangent_index + 1) % N]
         end = convexBig[down_tangent_index % N]
 
+        print(xmul, ymul)
+
         # get upTriangle
-        upTriangleBig = cross(
-            upIntersect[0] - q[0], upIntersect[1] - q[1],
-            start[0] - q[0], start[1] - q[1]
+        upArea = cross(
+            upIntersect[0] * downIntersect[2] - q[0] * xmul, upIntersect[1] * downIntersect[3] - q[1] * ymul,
+            (start[0] - q[0]) * xmul, (start[1] - q[1]) * ymul
         )
-        if upTriangleBig < 0:
-            upTriangleBig = -upTriangleBig
+        if upArea < 0:
+            upArea = -upArea
+        print("upArea: ", upArea)
 
         # get downTriangle
-        downTriangleBig = cross(
-            downIntersect[0] - q[0], downIntersect[1] - q[1],
+        downArea = cross(
+            downIntersect[0] * upIntersect[2] - q[0], downIntersect[1]* upIntersect[3] - q[1],
             end[0] - q[0], end[1] - q[1]
         )
-        if downTriangleBig < 0:
-            downTriangleBig = -downTriangleBig
+        if downArea < 0:
+            downArea = -downArea
+        print("downArea: ", downArea)
+
+        area = upArea + downArea
+        # 몫
+        val = area // (xmul * ymul)
+        # area 에서 큰 부분 뺌
+        area -= val * xmul * ymul
+        # 몫 + 나머지 계산
+        big_small = Decimal(val)
+        big_small += Decimal(area) / Decimal(xmul * ymul)
         
         fan: Decimal = 0
         fan = fan + cross(q[0], q[1], start[0], start[1])
@@ -435,9 +483,9 @@ for q in query:
         fan = fan + cross(end[0], end[1], q[0], q[1])
         if fan < 0:
             fan = -fan
-        big = upTriangleBig + fan + downTriangleBig
+        big = Decimal(big_small) + fan
 
-    small: Decimal = 0
+    small: int = 0
     ux = q[0] + up_tangent[0]
     uy = q[1] + up_tangent[1]
     dx = q[0] + down_tangent[0]
@@ -464,5 +512,24 @@ for q in query:
         small = -small
 
     ret: Decimal = (big - small) / 2
+    print(big, small)
+    # print(ret.quantize(Decimal('1.0000000000')))
 
-    print(ret.quantize(Decimal('1.0000000000')))
+
+"""
+4 3 2
+-1000000 -1000000
+1000000 -1000000
+1000000 1000000
+-1000000 1000000
+-999998 -999998
+999998 -999998
+999998 999998
+999999 -999999
+999999 -999998
+
+exact output
+
+1999999999995.999997999997   //  분수로 3999993999992000008/1999997
+1999999999995.999998999998   //  분수로 1999995999996000007/999998
+"""
