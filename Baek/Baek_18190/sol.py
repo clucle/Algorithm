@@ -448,7 +448,14 @@ for q in query:
         end = convexBig[down_tangent_index % N]
 
         print(xmul, ymul)
+        print("point:" , q[0] * xmul, q[1] * ymul)
 
+        print("start: ", start)
+        
+        print("end: ", end)
+        print(upIntersect[0] * downIntersect[2], q[0] * xmul, upIntersect[1] * downIntersect[3], q[1] * ymul)
+        print(upIntersect[0] * downIntersect[2] - q[0] * xmul, upIntersect[1] * downIntersect[3] - q[1] * ymul)
+        print((start[0] - q[0]) * xmul, (start[1] - q[1]) * ymul)
         # get upTriangle
         upArea = cross(
             upIntersect[0] * downIntersect[2] - q[0] * xmul, upIntersect[1] * downIntersect[3] - q[1] * ymul,
@@ -458,23 +465,30 @@ for q in query:
             upArea = -upArea
         print("upArea: ", upArea)
 
+        print("----")
+        print(downIntersect[0] * upIntersect[2] - q[0] * xmul, downIntersect[1] * upIntersect[3] - q[1] * ymul)
+        print((end[0] - q[0]) * xmul, (end[1] - q[1]) * ymul)
+
         # get downTriangle
         downArea = cross(
-            downIntersect[0] * upIntersect[2] - q[0], downIntersect[1]* upIntersect[3] - q[1],
-            end[0] - q[0], end[1] - q[1]
+            downIntersect[0] * upIntersect[2] - q[0] * xmul, downIntersect[1] * upIntersect[3] - q[1] * ymul,
+            (end[0] - q[0]) * xmul, (end[1] - q[1]) * ymul
         )
         if downArea < 0:
             downArea = -downArea
         print("downArea: ", downArea)
 
         area = upArea + downArea
+        print("area: ", area)
         # 몫
         val = area // (xmul * ymul)
+        print("val:", val)
         # area 에서 큰 부분 뺌
         area -= val * xmul * ymul
+        print("rest : ", area)
         # 몫 + 나머지 계산
-        big_small = Decimal(val)
-        big_small += Decimal(area) / Decimal(xmul * ymul)
+        up_down = Decimal(val)
+        up_down += Decimal(area) / Decimal(xmul * ymul)
         
         fan: Decimal = 0
         fan = fan + cross(q[0], q[1], start[0], start[1])
@@ -483,7 +497,7 @@ for q in query:
         fan = fan + cross(end[0], end[1], q[0], q[1])
         if fan < 0:
             fan = -fan
-        big = Decimal(big_small) + fan
+        big = Decimal(up_down) + fan
 
     small: int = 0
     ux = q[0] + up_tangent[0]
@@ -512,7 +526,7 @@ for q in query:
         small = -small
 
     ret: Decimal = (big - small) / 2
-    print(big, small)
+    print(ret)
     # print(ret.quantize(Decimal('1.0000000000')))
 
 
