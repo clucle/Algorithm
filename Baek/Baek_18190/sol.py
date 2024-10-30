@@ -413,7 +413,7 @@ for q in query:
     # up, down 의 0,1 은 이미 2,3 이 곱해져 있다고 생각
     # q 에만 xmul & ymul 을 곱해서 사용해보자..!
 
-    big: Decimal = 0
+    big: int = 0
     if up_tangent_index == down_tangent_index:
         # 한 선분내에 점이 두개있다면 따로 처리
         vup_x = upIntersect[0] * downIntersect[2] - q[0] * xmul
@@ -431,14 +431,7 @@ for q in query:
             ymul = -ymul
 
         # 결국 우리는 area / (xmul * ymul 을 구할거임)
-
-        # 몫
-        val = area // (xmul * ymul)
-        # area 에서 큰 부분 뺌
-        area -= val * xmul * ymul
-        # 몫 + 나머지 계산
-        big = Decimal(val)
-        big += Decimal(area) / Decimal(xmul * ymul)
+        big = area
 
     else:
         if down_tangent_index < up_tangent_index:
@@ -479,25 +472,15 @@ for q in query:
         #print("downArea: ", downArea)
 
         area = upArea + downArea
-        #print("area: ", area)
-        # 몫
-        val = area // (xmul * ymul)
-        #print("val:", val)
-        # area 에서 큰 부분 뺌
-        area -= val * xmul * ymul
-        #print("rest : ", area)
-        # 몫 + 나머지 계산
-        up_down = Decimal(val)
-        up_down += Decimal(area) / Decimal(xmul * ymul)
         
-        fan: Decimal = 0
+        fan: int = 0
         fan = fan + cross(q[0], q[1], start[0], start[1])
         fan = fan + prefixSumConvexBig[down_tangent_index - 1]
         fan = fan - prefixSumConvexBig[up_tangent_index]
         fan = fan + cross(end[0], end[1], q[0], q[1])
         if fan < 0:
             fan = -fan
-        big = Decimal(up_down) + fan
+        big = area + fan
 
     small: int = 0
     ux = q[0] + up_tangent[0]
@@ -525,7 +508,20 @@ for q in query:
     if small < 0:
         small = -small
 
-    ret: Decimal = (big - small) / 2
+    if xmul < 0:
+        xmul = -xmul
+    if ymul < 0:
+        ymul = -ymul
+    small = small * (xmul * ymul)
+
+    print(big, small)
+
+    total = big - small
+    val = total // (xmul * ymul)
+    total -= val * (xmul * ymul)
+    rest = Decimal(total) / Decimal(xmul * ymul)
+    ret: Decimal = (Decimal(val) + rest) / 2
+
     # print(ret)
     print(ret.quantize(Decimal('1.0000000000')))
 
