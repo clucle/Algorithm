@@ -403,11 +403,11 @@ for q in query:
     xmul = upIntersect[2] * downIntersect[2]
     ymul = upIntersect[3] * downIntersect[3]
 
-    print("xmul: ", xmul, "dx :", upIntersect[2], downIntersect[2])
-    print("ymul: ", ymul, "dy :", upIntersect[3], downIntersect[3])
+    #print("xmul: ", xmul, "dx :", upIntersect[2], downIntersect[2])
+    #print("ymul: ", ymul, "dy :", upIntersect[3], downIntersect[3])
 
-    print("origin u : ", upIntersect[0] / upIntersect[2], upIntersect[1] / upIntersect[3])
-    print("origin d : ", downIntersect[0] / downIntersect[2], downIntersect[1] / downIntersect[3])
+    #print("origin u : ", upIntersect[0] / upIntersect[2], upIntersect[1] / upIntersect[3])
+    #print("origin d : ", downIntersect[0] / downIntersect[2], downIntersect[1] / downIntersect[3])
     
 
     # up, down 의 0,1 은 이미 2,3 이 곱해져 있다고 생각
@@ -447,15 +447,15 @@ for q in query:
         start = convexBig[(up_tangent_index + 1) % N]
         end = convexBig[down_tangent_index % N]
 
-        print(xmul, ymul)
-        print("point:" , q[0] * xmul, q[1] * ymul)
+        #print(xmul, ymul)
+        #print("point:" , q[0] * xmul, q[1] * ymul)
 
-        print("start: ", start)
+        #print("start: ", start)
         
-        print("end: ", end)
-        print(upIntersect[0] * downIntersect[2], q[0] * xmul, upIntersect[1] * downIntersect[3], q[1] * ymul)
-        print(upIntersect[0] * downIntersect[2] - q[0] * xmul, upIntersect[1] * downIntersect[3] - q[1] * ymul)
-        print((start[0] - q[0]) * xmul, (start[1] - q[1]) * ymul)
+        #print("end: ", end)
+        #print(upIntersect[0] * downIntersect[2], q[0] * xmul, upIntersect[1] * downIntersect[3], q[1] * ymul)
+        #print(upIntersect[0] * downIntersect[2] - q[0] * xmul, upIntersect[1] * downIntersect[3] - q[1] * ymul)
+        #print((start[0] - q[0]) * xmul, (start[1] - q[1]) * ymul)
         # get upTriangle
         upArea = cross(
             upIntersect[0] * downIntersect[2] - q[0] * xmul, upIntersect[1] * downIntersect[3] - q[1] * ymul,
@@ -463,11 +463,11 @@ for q in query:
         )
         if upArea < 0:
             upArea = -upArea
-        print("upArea: ", upArea)
+        #print("upArea: ", upArea)
 
-        print("----")
-        print(downIntersect[0] * upIntersect[2] - q[0] * xmul, downIntersect[1] * upIntersect[3] - q[1] * ymul)
-        print((end[0] - q[0]) * xmul, (end[1] - q[1]) * ymul)
+        #print("----")
+        #print(downIntersect[0] * upIntersect[2] - q[0] * xmul, downIntersect[1] * upIntersect[3] - q[1] * ymul)
+        #print((end[0] - q[0]) * xmul, (end[1] - q[1]) * ymul)
 
         # get downTriangle
         downArea = cross(
@@ -476,16 +476,16 @@ for q in query:
         )
         if downArea < 0:
             downArea = -downArea
-        print("downArea: ", downArea)
+        #print("downArea: ", downArea)
 
         area = upArea + downArea
-        print("area: ", area)
+        #print("area: ", area)
         # 몫
         val = area // (xmul * ymul)
-        print("val:", val)
+        #print("val:", val)
         # area 에서 큰 부분 뺌
         area -= val * xmul * ymul
-        print("rest : ", area)
+        #print("rest : ", area)
         # 몫 + 나머지 계산
         up_down = Decimal(val)
         up_down += Decimal(area) / Decimal(xmul * ymul)
@@ -526,8 +526,8 @@ for q in query:
         small = -small
 
     ret: Decimal = (big - small) / 2
-    print(ret)
-    # print(ret.quantize(Decimal('1.0000000000')))
+    # print(ret)
+    print(ret.quantize(Decimal('1.0000000000')))
 
 
 """
