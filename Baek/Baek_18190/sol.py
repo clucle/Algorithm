@@ -1,12 +1,12 @@
 from sys import stdin
-from decimal import Decimal, getcontext
+from decimal import Decimal, getcontext, ROUND_DOWN
 import math
 
 # for test
 # stdin=open("input.txt","r")
 
 N, M, Q = list(map(int, stdin.readline().split()))
-getcontext().prec = 80
+getcontext().prec = 25
 
 convexBig = []
 convexSmall = []
@@ -123,7 +123,7 @@ def decompose(convex, uphull, downhull):
             count += 1
             end = here
             break
-    uphull = uphull[:count]
+    del uphull[count:]
     
     count = 0
     while end != start:
@@ -133,7 +133,7 @@ def decompose(convex, uphull, downhull):
     
     downhull[count] = convex[start]
     count += 1
-    downhull = downhull[:count]
+    del downhull[count:]
 
 def preprocess():
     prev = 0
@@ -383,7 +383,7 @@ for q in query:
     down_tangent = down_tangent1 if ccw_vec(
         down_tangent1[0], down_tangent1[1],
         down_tangent2[0], down_tangent2[1]) <= 0 else down_tangent2
-
+    
     up_tangent_index = nearIndex(convexBig, q, up_tangent)
     down_tangent_index = nearIndex(convexBig, q, down_tangent)
 
@@ -406,8 +406,11 @@ for q in query:
     #print("xmul: ", xmul, "dx :", upIntersect[2], downIntersect[2])
     #print("ymul: ", ymul, "dy :", upIntersect[3], downIntersect[3])
 
-    #print("origin u : ", upIntersect[0] / upIntersect[2], upIntersect[1] / upIntersect[3])
-    #print("origin d : ", downIntersect[0] / downIntersect[2], downIntersect[1] / downIntersect[3])
+    #print("origin up : ", upIntersect[0] / upIntersect[2], upIntersect[1] / upIntersect[3])
+    #print("origin do : ", downIntersect[0] / downIntersect[2], downIntersect[1] / downIntersect[3])
+    #print("not origin up : ", upIntersect[0], upIntersect[1])
+    #print("not origin do : ", downIntersect[0], downIntersect[1])
+    
     
 
     # up, down 의 0,1 은 이미 2,3 이 곱해져 있다고 생각
@@ -421,7 +424,19 @@ for q in query:
         vdown_x = downIntersect[0] * upIntersect[2] - q[0] * xmul
         vdown_y = downIntersect[1] * upIntersect[3] - q[1] * ymul
 
+        #print("origin up: ", upIntersect[0] / upIntersect[2], upIntersect[1] / upIntersect[3])
+        #print("origin down: ", downIntersect[0] / downIntersect[2], downIntersect[1] / downIntersect[3])
+        #print(upIntersect[0], upIntersect[2], upIntersect[1], upIntersect[3])
+        #print(downIntersect[0], downIntersect[2], downIntersect[1], downIntersect[3])
+
+        #print("xmul: ", xmul, "ymul: ", ymul)
+        #print(vup_x, vup_y, vdown_x, vdown_y)
+
         area = cross(vup_x, vup_y, vdown_x, vdown_y)
+
+        #print("area: ", area)
+        
+
         # 계산 위에 모두 +로 전환
         if area < 0:
             area = -area
@@ -429,6 +444,8 @@ for q in query:
             xmul = -xmul
         if ymul < 0:
             ymul = -ymul
+
+        #print("origin: ", area / (xmul * ymul))
 
         # 결국 우리는 area / (xmul * ymul 을 구할거임)
         big = area
@@ -443,12 +460,11 @@ for q in query:
         #print(xmul, ymul)
         #print("point:" , q[0] * xmul, q[1] * ymul)
 
-        #print("start: ", start)
-        
-        #print("end: ", end)
-        #print(upIntersect[0] * downIntersect[2], q[0] * xmul, upIntersect[1] * downIntersect[3], q[1] * ymul)
-        #print(upIntersect[0] * downIntersect[2] - q[0] * xmul, upIntersect[1] * downIntersect[3] - q[1] * ymul)
-        #print((start[0] - q[0]) * xmul, (start[1] - q[1]) * ymul)
+        # print("start: ", start)
+        # print("end: ", end)
+        # print(upIntersect[0] * downIntersect[2], q[0] * xmul, upIntersect[1] * downIntersect[3], q[1] * ymul)
+        # print(upIntersect[0] * downIntersect[2] - q[0] * xmul, upIntersect[1] * downIntersect[3] - q[1] * ymul)
+        # print((start[0] - q[0]) * xmul, (start[1] - q[1]) * ymul)
         # get upTriangle
         upArea = cross(
             upIntersect[0] * downIntersect[2] - q[0] * xmul, upIntersect[1] * downIntersect[3] - q[1] * ymul,
@@ -456,7 +472,7 @@ for q in query:
         )
         if upArea < 0:
             upArea = -upArea
-        #print("upArea: ", upArea)
+        # print("upArea: ", upArea)
 
         #print("----")
         #print(downIntersect[0] * upIntersect[2] - q[0] * xmul, downIntersect[1] * upIntersect[3] - q[1] * ymul)
@@ -469,7 +485,7 @@ for q in query:
         )
         if downArea < 0:
             downArea = -downArea
-        #print("downArea: ", downArea)
+        # print("downArea: ", downArea)
 
         area = upArea + downArea
         
@@ -480,6 +496,9 @@ for q in query:
         fan = fan + cross(end[0], end[1], q[0], q[1])
         if fan < 0:
             fan = -fan
+        # print("origin: fan", fan)
+        fan = fan * xmul * ymul
+        # print("fan: ", fan)
         big = area + fan
 
     small: int = 0
@@ -500,13 +519,14 @@ for q in query:
     
     if (down_index_for_small_convex < up_index_for_small_convex):
         down_index_for_small_convex = down_index_for_small_convex + M
-    
+
     small = small + prefixSumConvexSmall[down_index_for_small_convex - 1]
     if up_index_for_small_convex > 0:
         small = small - prefixSumConvexSmall[up_index_for_small_convex - 1]
     
     if small < 0:
         small = -small
+    # print("origin small : ", small)
 
     if xmul < 0:
         xmul = -xmul
@@ -514,16 +534,28 @@ for q in query:
         ymul = -ymul
     small = small * (xmul * ymul)
 
-    print(big, small)
+    #print(big, small)
 
     total = big - small
-    val = total // (xmul * ymul)
-    total -= val * (xmul * ymul)
-    rest = Decimal(total) / Decimal(xmul * ymul)
+
+    xymul = xmul * ymul
+    # print("total: ", total, xymul)
+    gcd_total_mul = math.gcd(total, xymul)
+    total //= gcd_total_mul
+    xymul //= gcd_total_mul
+    # print("total: ", gcd_total_mul, total, xymul)
+    # print(total, xymul)
+    val = total // xymul
+    total -= val * xymul
+    rest = Decimal(total) / Decimal(xymul)
     ret: Decimal = (Decimal(val) + rest) / 2
 
     # print(ret)
-    print(ret.quantize(Decimal('1.0000000000')))
+    # print(ret)
+    n = 12
+    rounded_num = ret.quantize(Decimal(f'1.{"0" * n}'), rounding=ROUND_DOWN)
+    print(rounded_num)
+    #print(print(f"{ret:.8f}") )
 
 
 """
@@ -542,4 +574,57 @@ exact output
 
 1999999999995.999997999997   //  분수로 3999993999992000008/1999997
 1999999999995.999998999998   //  분수로 1999995999996000007/999998
+
+
+8 8 16
+1000000 500000
+500000 1000000
+-500000 1000000
+-1000000 500000
+-1000000 -500000
+-500000 -1000000
+500000 -1000000
+1000000 -500000
+-200000 -400000
+200000 -400000
+400000 -200000
+400000 200000
+200000 400000
+-200000 400000
+-400000 200000
+-400000 -200000
+999999 0
+0 999999
+-999999 0
+0 -999999
+999999 1
+1 999999
+-999999 1
+1 -999999
+999999 -1
+-1 999999
+-999999 -1
+-1 -999999
+400001 0
+0 400001
+-400001 01
+0 -400001
+
+answer
+1073333802778.1690674
+1073333802778.1690674
+1073333802778.1690674
+1073333802778.1690674
+1073333802777.3864746
+1073333802777.3864746
+1073333802777.3864746
+1073333802777.3864746
+1073333802777.3864746
+1073333802777.3864746
+1073333802777.3864746
+1073333802777.3864746
+1989996800000.0000000
+1989996800000.0000000
+1989996800000.0000000
+1989996800000.0000000
 """
